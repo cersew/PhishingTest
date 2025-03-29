@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Test нәтижелері</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script>
+        function filterResults() {
+            let selectedStatus = document.getElementById("statusFilter").value;
+            let rows = document.querySelectorAll("#resultsTable tbody tr");
+
+            rows.forEach(row => {
+                let status = row.cells[1].innerText;
+                if (selectedStatus === "Бәрі" || status === selectedStatus) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+    </script>
+    <style>
+        .back-button {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5 text-center">
+        <h1>Тестілеу нәтижелері</h1>
+
+        <!-- Кнопка "Обновить" для перезагрузки страницы отчётов -->
+        <div class="my-3">
+            <form method="GET" action="/reports">
+                <button type="submit" class="btn btn-info">Жаңарту</button>
+            </form>
+        </div>
+
+        <!-- Список введённых адресов жертв (таблица victims) -->
+        {% if victims_list %}
+            <h3>Жәбірленушілердің e-mail тізімі</h3>
+            <ul class="list-group mb-4">
+                {% for row in victims_list %}
+                    <!-- Если row — это строка (row[0] / row['email']), выводим правильно -->
+                    {% if row is string %}
+                        <li class="list-group-item">{{ row }}</li>
+                    {% else %}
+                        <li class="list-group-item">{{ row['email'] }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <!-- Фильтр по статусу -->
+        <label for="statusFilter">Статус бойынша фильтр:</label>
+        <select id="statusFilter" class="form-select w-auto mx-auto" onchange="filterResults()">
+            <option>Бәрі</option>
+            <option>Ұсталды</option>
+            <option>Хат ашылды, бірақ ұсталған жоқ</option>
+        </select>
+
+        <!-- Таблица отчётов -->
+        <table class="table table-bordered mt-3" id="resultsTable">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Статус</th>
+                    <th>Пайдаланушы аты</th>
+                    <th>Құпия сөз</th>
+                    <th>IP</th>
+                    <th>Күні</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if results %}
+                    {% for row in results %}
+                        <tr>
+                            <td>{{ row[0] }}</td>
+                            <td>{{ row[1] }}</td>
+                            <td>{{ row[2] or "—" }}</td>
+                            <td>{{ row[3] or "—" }}</td>
+                            <td>{{ row[4] or "—" }}</td>
+                            <td>{{ row[5] }}</td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6">Есеп жоқ</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <h3>Нәтижелер кестесі</h3>
+        <img src="/static/report_chart.png" width="400">
+
+        <div class="back-button">
+            <a href="/" class="btn btn-primary">Артқа</a>
+        </div>
+    </div>
+</body>
+</html>
